@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>S.I.N.G.U.L.A.R.I.T.Y. X</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; cursor: none; }
@@ -13,17 +13,32 @@
             transition: width 0.3s, height 0.3s, border-color 0.5s; z-index: 1000;
             box-shadow: 0 0 25px var(--c);
         }
+        /* Улучшенный HUD для мобильных */
         .hud {
             position: absolute; color: var(--c); font-size: 8px; letter-spacing: 2px;
-            pointer-events: none; opacity: 0.4; text-shadow: 0 0 5px var(--c);
-            text-transform: uppercase; transition: color 0.5s;
+            pointer-events: none; opacity: 0.5; text-shadow: 0 0 5px var(--c);
+            text-transform: uppercase; transition: color 0.5s; z-index: 10;
         }
-        #ui-t { top: 20px; width: 100%; text-align: center; font-size: 13px; letter-spacing: 10px; opacity: 0.9; }
-        #ui-bl { bottom: 20px; left: 20px; border-left: 2px solid var(--c); padding-left: 10px; }
-        #ui-tr { top: 20px; right: 20px; text-align: right; }
+        #ui-t { 
+            top: 40px; /* Увеличен отступ сверху для камер-вырезов */
+            width: 100%; text-align: center; font-size: 14px; letter-spacing: 8px; font-weight: 800;
+        }
+        #ui-bl { 
+            bottom: 30px; left: 20px; border-left: 2px solid var(--c); padding-left: 10px; 
+        }
+        #ui-tr { 
+            top: 70px; right: 20px; text-align: right; /* Сдвинуто ниже основного заголовка */
+        }
+        
+        @media (max-width: 600px) {
+            #ui-t { font-size: 11px; letter-spacing: 4px; top: 45px; }
+            #ui-tr { top: 80px; font-size: 7px; }
+            #ui-bl { font-size: 7px; bottom: 40px; }
+        }
+
         .grid {
-            position: absolute; width: 100px; height: 100px; border: 1px solid var(--c);
-            opacity: 0.1; pointer-events: none; transition: all 0.5s;
+            position: absolute; width: 80px; height: 80px; border: 1px solid var(--c);
+            opacity: 0.1; pointer-events: none; transition: all 0.5s; z-index: 1;
         }
         #g1 { top: 0; left: 0; border-right: none; border-bottom: none; }
         #g2 { bottom: 0; right: 0; border-left: none; border-top: none; }
@@ -34,8 +49,8 @@
     <div id="g1" class="grid"></div>
     <div id="g2" class="grid"></div>
     <div id="ui-t" class="hud">S.I.N.G.U.L.A.R.I.T.Y. X</div>
-    <div id="ui-bl" class="hud">ENGINE: VORTEX v.5<br>STABILITY: MAXIMUM<br>SOURCE: GITHUB_PUSH</div>
-    <div id="ui-tr" class="hud">THREAT LEVEL: ZERO<br>VECTOR: STABLE</div>
+    <div id="ui-bl" class="hud">CORE: VORTEX v.5<br>STATUS: MAXIMUM<br>OS: HYPER_OPTIMIZED</div>
+    <div id="ui-tr" class="hud">THREAT: ZERO<br>VECTOR: STABLE</div>
     <div id="cursor"></div>
     <canvas id="canvas"></canvas>
 
@@ -70,7 +85,6 @@
                 this.dist = Math.random() * 110 + 40;
             }
             update(cX, cY) {
-                // Если сфера потерялась (вне экрана), возвращаем её в центр мгновенно
                 if (this.x < -100 || this.x > width + 100) this.x = cX;
                 if (this.y < -100 || this.y > height + 100) this.y = cY;
 
@@ -80,7 +94,6 @@
                 let targetX = cX + Math.cos(this.angle) * d;
                 let targetY = cY + Math.sin(this.angle) * d;
 
-                // Плавное, но очень быстрое следование
                 this.x += (targetX - this.x) * 0.2;
                 this.y += (targetY - this.y) * 0.2;
             }
@@ -106,7 +119,7 @@
             document.body.style.setProperty('--c', colors[colorIdx]);
             cursor.style.width = '75px';
             cursor.style.height = '75px';
-            move(e);
+            if(e.type !== 'touchstart') move(e);
         };
 
         const release = () => {
@@ -127,7 +140,6 @@
             ctx.fillRect(0, 0, width, height);
             pulse += 0.05;
 
-            // Если мышка/палец не активны, сфера дрейфует в центре
             let cX = mouse.x < -500 ? width/2 + Math.cos(pulse*0.5)*50 : mouse.x;
             let cY = mouse.y < -500 ? height/2 + Math.sin(pulse*0.5)*50 : mouse.y;
 
@@ -136,9 +148,7 @@
             ctx.lineWidth = 0.8;
             for(let i = 0; i < particles.length; i++) {
                 for(let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
-                    let d2 = dx*dx + dy*dy;
+                    let d2 = (particles[i].x-particles[j].x)**2 + (particles[i].y-particles[j].y)**2;
                     if(d2 < 6500) {
                         ctx.strokeStyle = colors[colorIdx] + '35';
                         ctx.beginPath();
